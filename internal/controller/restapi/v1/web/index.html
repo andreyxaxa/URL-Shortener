@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e4e8;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .secondary-btn {
+            background: #764ba2;
+        }
+
+        .secondary-btn:hover {
+            background: #653a8a;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 16px;
+            background: #f6f8fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .result-value {
+            font-size: 16px;
+            color: #333;
+            word-break: break-all;
+            margin-bottom: 12px;
+        }
+
+        .result-value:last-child {
+            margin-bottom: 0;
+        }
+
+        .copy-btn {
+            padding: 8px 16px;
+            background: #28a745;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+            border-left: 4px solid #c33;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .analytics-result {
+            margin-top: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .analytics-section {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f6f8fa;
+            border-radius: 8px;
+        }
+
+        .analytics-section h3 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .stat-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e1e4e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .optional-badge {
+            display: inline-block;
+            background: #ffeaa7;
+            color: #856404;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Создание короткой ссылки -->
+        <div class="card">
+            <h1>🔗 URL Shortener</h1>
+            <p class="subtitle">Сократите вашу длинную ссылку</p>
+
+            <div class="form-group">
+                <label for="originalUrl">Оригинальная ссылка</label>
+                <input type="text" id="originalUrl" placeholder="https://example.com/very-long-url">
+            </div>
+
+            <div class="form-group">
+                <label for="customAlias">
+                    Пользовательский alias
+                    <span class="optional-badge">опционально</span>
+                </label>
+                <input type="text" id="customAlias" placeholder="my-custom-link">
+            </div>
+
+            <button id="shortenBtn" onclick="shortenUrl()">Сократить ссылку</button>
+
+            <div id="shortenError" class="error"></div>
+
+            <div id="shortenResult" class="result">
+                <div class="result-label">Оригинальная ссылка:</div>
+                <div class="result-value" id="resultOriginalUrl"></div>
+
+                <div class="result-label">Короткая ссылка:</div>
+                <div class="result-value" id="resultShortUrl"></div>
+
+                <button class="copy-btn" onclick="copyShortUrl()">📋 Скопировать</button>
+            </div>
+        </div>
+
+        <!-- Аналитика -->
+        <div class="card">
+            <h2>📊 Аналитика</h2>
+
+            <div class="form-group">
+                <label for="analyticsUrl">Короткая ссылка для анализа</label>
+                <input type="text" id="analyticsUrl" placeholder="http://localhost:8080/v1/s/mate">
+            </div>
+
+            <div class="button-group">
+                <button onclick="getAnalytics('full')">Полная аналитика</button>
+                <button class="secondary-btn" onclick="getAnalytics('day')">По дням</button>
+                <button class="secondary-btn" onclick="getAnalytics('month')">По месяцам</button>
+                <button class="secondary-btn" onclick="getAnalytics('browser')">По браузерам</button>
+                <button class="secondary-btn" onclick="getAnalytics('device')">По устройствам</button>
+            </div>
+
+            <div id="analyticsLoading" class="loading">
+                <div class="spinner"></div>
+                <div>Загрузка аналитики...</div>
+            </div>
+
+            <div id="analyticsError" class="error"></div>
+
+            <div id="analyticsResult" class="analytics-result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/v1';
+
+        // Сокращение ссылки
+        async function shortenUrl() {
+            const originalUrl = document.getElementById('originalUrl').value.trim();
+            const customAlias = document.getElementById('customAlias').value.trim();
+            
+            const errorEl = document.getElementById('shortenError');
+            const resultEl = document.getElementById('shortenResult');
+            const btn = document.getElementById('shortenBtn');
+
+            // Скрываем предыдущие результаты
+            errorEl.classList.remove('show');
+            resultEl.classList.remove('show');
+
+            // Валидация
+            if (!originalUrl) {
+                showError(errorEl, 'Введите оригинальную ссылку');
+                return;
+            }
+
+            if (!originalUrl.startsWith('http://') && !originalUrl.startsWith('https://')) {
+                showError(errorEl, 'Ссылка должна начинаться с http:// или https://');
+                return;
+            }
+
+            // Формируем body
+            const body = {
+                url: originalUrl
+            };
+
+            if (customAlias) {
+                body.custom_alias = customAlias;
+            }
+
+            // Отправляем запрос
+            btn.disabled = true;
+            btn.textContent = 'Обработка...';
+
+            try {
+                const response = await fetch(`${API_BASE}/shorten`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Ошибка при создании короткой ссылки');
+                }
+
+                // Показываем результат
+                document.getElementById('resultOriginalUrl').textContent = data.original_url;
+                document.getElementById('resultShortUrl').textContent = data.short_url;
+                resultEl.classList.add('show');
+
+                // Очищаем форму
+                document.getElementById('originalUrl').value = '';
+                document.getElementById('customAlias').value = '';
+
+            } catch (error) {
+                showError(errorEl, error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Сократить ссылку';
+            }
+        }
+
+        // Копирование короткой ссылки
+        function copyShortUrl() {
+            const shortUrl = document.getElementById('resultShortUrl').textContent;
+            navigator.clipboard.writeText(shortUrl).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Скопировано!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Получение аналитики
+        async function getAnalytics(type) {
+            const analyticsUrl = document.getElementById('analyticsUrl').value.trim();
+            const errorEl = document.getElementById('analyticsError');
+            const resultEl = document.getElementById('analyticsResult');
+            const loadingEl = document.getElementById('analyticsLoading');
+
+            // Скрываем предыдущие результаты
+            errorEl.classList.remove('show');
+            resultEl.innerHTML = '';
+            loadingEl.classList.add('show');
+
+            // Валидация
+            if (!analyticsUrl) {
+                loadingEl.classList.remove('show');
+                showError(errorEl, 'Введите короткую ссылку');
+                return;
+            }
+
+            // Извлекаем short_code из URL
+            const shortCode = extractShortCode(analyticsUrl);
+            if (!shortCode) {
+                loadingEl.classList.remove('show');
+                showError(errorEl, 'Не удалось извлечь short_code из ссылки');
+                return;
+            }
+
+            // Формируем URL для запроса
+            let url = `${API_BASE}/analytics/${shortCode}`;
+            
+            switch (type) {
+                case 'day':
+                    url += '?group-by=day';
+                    break;
+                case 'month':
+                    url += '?group-by=month';
+                    break;
+                case 'browser':
+                    url += '?group-by=browser';
+                    break;
+                case 'device':
+                    url += '?group-by=device';
+                    break;
+            }
+
+            // Отправляем запрос
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Ошибка при получении аналитики');
+                }
+
+                // Отображаем результат
+                displayAnalytics(data.analytics, type);
+
+            } catch (error) {
+                showError(errorEl, error.message);
+            } finally {
+                loadingEl.classList.remove('show');
+            }
+        }
+
+        // Извлечение short_code из URL
+        function extractShortCode(url) {
+            try {
+                // Примеры: http://localhost:8080/v1/s/mate или просто mate
+                const match = url.match(/\/s\/([^\/\?]+)/);
+                if (match) {
+                    return match[1];
+                }
+                
+                // Если просто код без URL
+                if (!url.includes('/') && !url.includes('http')) {
+                    return url;
+                }
+                
+                return null;
+            } catch {
+                return null;
+            }
+        }
+
+        // Отображение аналитики
+        function displayAnalytics(analytics, type) {
+            const resultEl = document.getElementById('analyticsResult');
+            let html = '';
+
+            // Полная аналитика
+            if (type === 'full') {
+                html += `
+                    <div class="analytics-section">
+                        <h3>📈 Общая статистика</h3>
+                        <div class="stat-item">
+                            <span class="stat-label">Всего кликов</span>
+                            <span class="stat-value">${analytics.total_clicks || 0}</span>
+                        </div>
+                    </div>
+                `;
+
+                if (analytics.clicks_by_browser && analytics.clicks_by_browser.length > 0) {
+                    html += `
+                        <div class="analytics-section">
+                            <h3>🌐 По браузерам</h3>
+                            ${analytics.clicks_by_browser.map(item => `
+                                <div class="stat-item">
+                                    <span class="stat-label">${item.browser}</span>
+                                    <span class="stat-value">${item.clicks}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                if (analytics.clicks_by_device && analytics.clicks_by_device.length > 0) {
+                    html += `
+                        <div class="analytics-section">
+                            <h3>📱 По устройствам</h3>
+                            ${analytics.clicks_by_device.map(item => `
+                                <div class="stat-item">
+                                    <span class="stat-label">${item.device}</span>
+                                    <span class="stat-value">${item.clicks}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                if (analytics.recent_clicks && analytics.recent_clicks.length > 0) {
+                    html += `
+                        <div class="analytics-section">
+                            <h3>📅 Недавние клики</h3>
+                            ${analytics.recent_clicks.map(item => `
+                                <div class="stat-item">
+                                    <span class="stat-label">${item.date}</span>
+                                    <span class="stat-value">${item.clicks}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            }
+
+            // По дням/месяцам
+            if (type === 'day' || type === 'month') {
+                const title = type === 'day' ? '📅 По дням' : '📆 По месяцам';
+                if (analytics.recent_clicks && analytics.recent_clicks.length > 0) {
+                    html += `
+                        <div class="analytics-section">
+                            <h3>${title}</h3>
+                            ${analytics.recent_clicks.map(item => `
+                                <div class="stat-item">
+                                    <span class="stat-label">${item.date}</span>
+                                    <span class="stat-value">${item.clicks}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    html = '<div class="analytics-section">Нет данных</div>';
+                }
+            }
+
+            // По браузерам
+            if (type === 'browser') {
+                if (analytics.clicks_by_browser && analytics.clicks_by_browser.length > 0) {
+                    html += `
+                        <div class="analytics-section">
+                            <h3>🌐 По браузерам</h3>
+                            ${analytics.clicks_by_browser.map(item => `
+                                <div class="stat-item">
+                                    <span class="stat-label">${item.browser}</span>
+                                    <span class="stat-value">${item.clicks}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    html = '<div class="analytics-section">Нет данных</div>';
+                }
+            }
+
+            // По устройствам
+            if (type === 'device') {
+                if (analytics.clicks_by_device && analytics.clicks_by_device.length > 0) {
+                    html += `
+                        <div class="analytics-section">
+                            <h3>📱 По устройствам</h3>
+                            ${analytics.clicks_by_device.map(item => `
+                                <div class="stat-item">
+                                    <span class="stat-label">${item.device}</span>
+                                    <span class="stat-value">${item.clicks}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    html = '<div class="analytics-section">Нет данных</div>';
+                }
+            }
+
+            resultEl.innerHTML = html || '<div class="analytics-section">Нет данных для отображения</div>';
+        }
+
+        // Показ ошибки
+        function showError(element, message) {
+            element.textContent = message;
+            element.classList.add('show');
+        }
+
+        // Enter для сокращения ссылки
+        document.getElementById('originalUrl').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') shortenUrl();
+        });
+
+        document.getElementById('customAlias').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') shortenUrl();
+        });
+
+        // Enter для аналитики
+        document.getElementById('analyticsUrl').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') getAnalytics('full');
+        });
+    </script>
+</body>
+</html>

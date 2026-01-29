@@ -10,8 +10,12 @@ func NewLinkRoutes(apiV1Group fiber.Router, lk usecase.Link, l logger.Interface,
 	r := &V1{lk: lk, l: l, baseURL: baseURL}
 
 	{
+		// API
 		apiV1Group.Post("/shorten", r.createShortURL)
 		apiV1Group.Get("/s/:short", r.redirectToOriginalURL)
 		apiV1Group.Get("/analytics/:short", r.getAnalytics)
+
+		// Web
+		apiV1Group.Get("/web", r.showUI)
 	}
 }
