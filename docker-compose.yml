@@ -1,0 +1,66 @@
+services:
+  db:
+    container_name: db-url-shortener
+    image: postgres:18.1-alpine
+    environment:
+      POSTGRES_SSL_MODE: "disable"
+      POSTGRES_HOST: "db"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: "url_shortener_db"
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "sUp3RP4sSw0rD"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d url_shortener_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  migrate:
+    container_name: migrates-url-shortener
+    image: migrate/migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations
+    entrypoint: ["migrate", 
+      "-path", "/migrations",
+      "-database", "postgres://user:sUp3RP4sSw0rD@db:5432/url_shortener_db?sslmode=disable",
+      "up"
+    ]
+
+  redis:
+    container_name: redis-url-shortener
+    image: redis:8-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+  app:
+    container_name: url-shortener-1
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+volumes:
+  db_data:
+  redis_data:
+    
