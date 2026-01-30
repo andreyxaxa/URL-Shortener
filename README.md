@@ -32,7 +32,7 @@
 ## Запуск
 
 1. Клонируйте репозиторий
-2. В корне создайте `.env` файл, скопируйте туда содержимое [env.example](https://github.com/andreyxaxa/URL-Shortener/blob/main/.env.example)
+2. В корне создайте `.env` файл, скопируйте туда содержимое [env.example](https://github.com/andreyxaxa/URL-Shortener/blob/main/.env.example) - `cp .env.example .env`
 3. Выполните, дождитесь запуска сервиса
    ```
    make compose-up
