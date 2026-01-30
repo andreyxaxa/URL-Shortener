@@ -44,7 +44,7 @@ func Run(cfg *config.Config) {
 
 	// HTTP Server
 	httpServer := httpserver.New(l, httpserver.Port(cfg.HTTP.Port))
-	restapi.NewRouter(httpServer.App, linkUseCase, l, fmt.Sprintf("http://localhost:%s", cfg.HTTP.Port))
+	restapi.NewRouter(httpServer.App, cfg, linkUseCase, l, fmt.Sprintf("http://localhost:%s", cfg.HTTP.Port))
 
 	// Start server
 	httpServer.Start()
