@@ -1,0 +1,328 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/v1/analytics/{short}": {
+            "get": {
+                "description": "Get analytics for short URL by different criteries",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Get URL analytics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Short Code",
+                        "name": "short",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "day",
+                            "month",
+                            "device",
+                            "browser"
+                        ],
+                        "type": "string",
+                        "description": "Group critery",
+                        "name": "group-by",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Full analytics",
+                        "schema": {
+                            "$ref": "#/definitions/response.GetAnalyticsResponse"
+                        }
+                    },
+                    "201": {
+                        "description": "Analytics by date (group-by=day/month)",
+                        "schema": {
+                            "$ref": "#/definitions/response.GetAnalyticsByDateResponse"
+                        }
+                    },
+                    "202": {
+                        "description": "Analytics by browser (group-by=browser)",
+                        "schema": {
+                            "$ref": "#/definitions/response.GetAnalyticsByBrowserResponse"
+                        }
+                    },
+                    "203": {
+                        "description": "Analytics by device (group-by=device)",
+                        "schema": {
+                            "$ref": "#/definitions/response.GetAnalyticsByDeviceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/s/{short}": {
+            "get": {
+                "description": "Redirects to original URL",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "redirect"
+                ],
+                "summary": "Redirect",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Short Code",
+                        "name": "short",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "Redirected"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/shorten": {
+            "post": {
+                "description": "Creates new short URL from original URL",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Create short URL",
+                "parameters": [
+                    {
+                        "description": "Link",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateShortURLRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.CreateShortURLResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "entity.ClickByBrowser": {
+            "type": "object",
+            "properties": {
+                "browser": {
+                    "type": "string"
+                },
+                "clicks": {
+                    "type": "integer"
+                }
+            }
+        },
+        "entity.ClickByDevice": {
+            "type": "object",
+            "properties": {
+                "clicks": {
+                    "type": "integer"
+                },
+                "device": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.CreateShortURLRequest": {
+            "type": "object",
+            "properties": {
+                "custom_alias": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.Analytics": {
+            "type": "object",
+            "properties": {
+                "clicks_by_browser": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.ClickByBrowser"
+                    }
+                },
+                "clicks_by_device": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.ClickByDevice"
+                    }
+                },
+                "recent_clicks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.ClickByDate"
+                    }
+                },
+                "total_clicks": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.AnalyticsByBrowser": {
+            "type": "object",
+            "properties": {
+                "clicks_by_browser": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.ClickByBrowser"
+                    }
+                }
+            }
+        },
+        "response.AnalyticsByDate": {
+            "type": "object",
+            "properties": {
+                "recent_clicks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.ClickByDate"
+                    }
+                }
+            }
+        },
+        "response.AnalyticsByDevice": {
+            "type": "object",
+            "properties": {
+                "clicks_by_device": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.ClickByDevice"
+                    }
+                }
+            }
+        },
+        "response.ClickByDate": {
+            "type": "object",
+            "properties": {
+                "clicks": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.CreateShortURLResponse": {
+            "type": "object",
+            "properties": {
+                "original_url": {
+                    "type": "string"
+                },
+                "short_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.Error": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.GetAnalyticsByBrowserResponse": {
+            "type": "object",
+            "properties": {
+                "analytics": {
+                    "$ref": "#/definitions/response.AnalyticsByBrowser"
+                }
+            }
+        },
+        "response.GetAnalyticsByDateResponse": {
+            "type": "object",
+            "properties": {
+                "analytics": {
+                    "$ref": "#/definitions/response.AnalyticsByDate"
+                }
+            }
+        },
+        "response.GetAnalyticsByDeviceResponse": {
+            "type": "object",
+            "properties": {
+                "analytics": {
+                    "$ref": "#/definitions/response.AnalyticsByDevice"
+                }
+            }
+        },
+        "response.GetAnalyticsResponse": {
+            "type": "object",
+            "properties": {
+                "analytics": {
+                    "$ref": "#/definitions/response.Analytics"
+                }
+            }
+        }
+    }
+}

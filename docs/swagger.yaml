@@ -1,0 +1,212 @@
+definitions:
+  entity.ClickByBrowser:
+    properties:
+      browser:
+        type: string
+      clicks:
+        type: integer
+    type: object
+  entity.ClickByDevice:
+    properties:
+      clicks:
+        type: integer
+      device:
+        type: string
+    type: object
+  request.CreateShortURLRequest:
+    properties:
+      custom_alias:
+        type: string
+      url:
+        type: string
+    type: object
+  response.Analytics:
+    properties:
+      clicks_by_browser:
+        items:
+          $ref: '#/definitions/entity.ClickByBrowser'
+        type: array
+      clicks_by_device:
+        items:
+          $ref: '#/definitions/entity.ClickByDevice'
+        type: array
+      recent_clicks:
+        items:
+          $ref: '#/definitions/response.ClickByDate'
+        type: array
+      total_clicks:
+        type: integer
+    type: object
+  response.AnalyticsByBrowser:
+    properties:
+      clicks_by_browser:
+        items:
+          $ref: '#/definitions/entity.ClickByBrowser'
+        type: array
+    type: object
+  response.AnalyticsByDate:
+    properties:
+      recent_clicks:
+        items:
+          $ref: '#/definitions/response.ClickByDate'
+        type: array
+    type: object
+  response.AnalyticsByDevice:
+    properties:
+      clicks_by_device:
+        items:
+          $ref: '#/definitions/entity.ClickByDevice'
+        type: array
+    type: object
+  response.ClickByDate:
+    properties:
+      clicks:
+        type: integer
+      date:
+        type: string
+    type: object
+  response.CreateShortURLResponse:
+    properties:
+      original_url:
+        type: string
+      short_url:
+        type: string
+    type: object
+  response.Error:
+    properties:
+      error:
+        type: string
+    type: object
+  response.GetAnalyticsByBrowserResponse:
+    properties:
+      analytics:
+        $ref: '#/definitions/response.AnalyticsByBrowser'
+    type: object
+  response.GetAnalyticsByDateResponse:
+    properties:
+      analytics:
+        $ref: '#/definitions/response.AnalyticsByDate'
+    type: object
+  response.GetAnalyticsByDeviceResponse:
+    properties:
+      analytics:
+        $ref: '#/definitions/response.AnalyticsByDevice'
+    type: object
+  response.GetAnalyticsResponse:
+    properties:
+      analytics:
+        $ref: '#/definitions/response.Analytics'
+    type: object
+info:
+  contact: {}
+paths:
+  /v1/analytics/{short}:
+    get:
+      consumes:
+      - application/json
+      description: Get analytics for short URL by different criteries
+      parameters:
+      - description: Short Code
+        in: path
+        name: short
+        required: true
+        type: string
+      - description: Group critery
+        enum:
+        - day
+        - month
+        - device
+        - browser
+        in: query
+        name: group-by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Full analytics
+          schema:
+            $ref: '#/definitions/response.GetAnalyticsResponse'
+        "201":
+          description: Analytics by date (group-by=day/month)
+          schema:
+            $ref: '#/definitions/response.GetAnalyticsByDateResponse'
+        "202":
+          description: Analytics by browser (group-by=browser)
+          schema:
+            $ref: '#/definitions/response.GetAnalyticsByBrowserResponse'
+        "203":
+          description: Analytics by device (group-by=device)
+          schema:
+            $ref: '#/definitions/response.GetAnalyticsByDeviceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Get URL analytics
+      tags:
+      - analytics
+  /v1/s/{short}:
+    get:
+      description: Redirects to original URL
+      parameters:
+      - description: Short Code
+        in: path
+        name: short
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "301":
+          description: Redirected
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Redirect
+      tags:
+      - redirect
+  /v1/shorten:
+    post:
+      consumes:
+      - application/json
+      description: Creates new short URL from original URL
+      parameters:
+      - description: Link
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateShortURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.CreateShortURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Create short URL
+      tags:
+      - links
+swagger: "2.0"
