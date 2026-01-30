@@ -8,10 +8,11 @@ import (
 
 type (
 	Config struct {
-		HTTP  HTTP
-		Log   Log
-		PG    PG
-		Redis Redis
+		HTTP    HTTP
+		Log     Log
+		PG      PG
+		Redis   Redis
+		Swagger Swagger
 	}
 
 	HTTP struct {
@@ -34,6 +35,10 @@ type (
 		Password    string `env:"REDIS_PASSWORD"`
 		DialTimeout int    `env:"REDIS_DIAL_TIMEOUT"`
 		Timeout     int    `env:"REDIS_TIMEOUT"`
+	}
+
+	Swagger struct {
+		Enabled bool `env:"SWAGGER_ENABLED" envDefault:"false"`
 	}
 )
 
