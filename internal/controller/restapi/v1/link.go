@@ -14,6 +14,16 @@ import (
 
 type analyticsHandler func(ctx *fiber.Ctx) error
 
+// @Summary Create short URL
+// @Description Creates new short URL from original URL
+// @Tags links
+// @Accept json
+// @Produce json
+// @Param request body request.CreateShortURLRequest true "Link"
+// @Success 200 {object} response.CreateShortURLResponse
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Router /v1/shorten [post]
 func (r *V1) createShortURL(ctx *fiber.Ctx) error {
 	var body request.CreateShortURLRequest
 
@@ -54,6 +64,15 @@ func (r *V1) createShortURL(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).JSON(resp)
 }
 
+// @Summary Redirect
+// @Description Redirects to original URL
+// @Tags redirect
+// @Produce json
+// @Param short path string true "Short Code"
+// @Success 301 "Redirected"
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Router /v1/s/{short} [get]
 func (r *V1) redirectToOriginalURL(ctx *fiber.Ctx) error {
 	shortCode := ctx.Params("short")
 
@@ -77,9 +96,24 @@ func (r *V1) redirectToOriginalURL(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, http.StatusInternalServerError, "storage problems")
 	}
 
-	return ctx.Redirect(originalURL, http.StatusMovedPermanently)
+	return ctx.Redirect(originalURL, http.StatusFound)
 }
 
+// @Summary Get URL analytics
+// @Description Get analytics for short URL by different criteries
+// @Tags analytics
+// @Accept json
+// @Produce json
+// @Param short path string true "Short Code"
+// @Param group-by query string false "Group critery" Enums(day, month, device, browser)
+// @Success 200 {object} response.GetAnalyticsResponse "Full analytics"
+// @Success 201 {object} response.GetAnalyticsByDateResponse "Analytics by date (group-by=day/month)"
+// @Success 202 {object} response.GetAnalyticsByBrowserResponse "Analytics by browser (group-by=browser)"
+// @Success 203 {object} response.GetAnalyticsByDeviceResponse "Analytics by device (group-by=device)"
+// @Failure 400 {object} response.Error
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Router /v1/analytics/{short} [get]
 func (r *V1) getAnalytics(ctx *fiber.Ctx) error {
 	groupBy := ctx.Query("group-by")
 
@@ -105,7 +139,7 @@ func (r *V1) getFullAnalytics(ctx *fiber.Ctx) error {
 	err := r.lk.ExistsByShortCode(ctx.UserContext(), shortCode)
 	if err != nil {
 		if errors.Is(err, errs.ErrRecordNotFound) {
-			return errorResponse(ctx, http.StatusBadRequest, "couldnt find original URL")
+			return errorResponse(ctx, http.StatusNotFound, "couldnt find original URL")
 		}
 		r.l.Error(err, "restapi - v1 - getFullAnalytics")
 
